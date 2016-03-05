@@ -14,6 +14,7 @@ from ardrone_autonomy.msg import Navdata # for receiving navdata feedback
 
 # We need to use resource locking to handle synchronization between GUI thread and ROS topic callbacks
 from threading import Lock
+from drone_controller import BasicDroneController
 
 # An enumeration of Drone Statuses
 from drone_status import DroneStatus
@@ -54,6 +55,8 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		self.setWindowTitle('AR.Drone Video Feed')
 		self.imageBox = QtGui.QLabel(self)
 		self.setCentralWidget(self.imageBox)
+
+		self.controller = BasicDroneController()
 
 		# Subscribe to the /ardrone/navdata topic, of message type navdata, and call self.ReceiveNavdata when a message is received
 		self.subNavdata = rospy.Subscriber('/ardrone/navdata',Navdata,self.ReceiveNavdata) 
@@ -97,9 +100,25 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 			self.imageLock.acquire()
 			try:			
 					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
-					openimage = ToOpenCV(self.image)
-					openimage = cv.blur(openimage, (9,9))
-					ROSimage = ToRos(openimage)
+					# openimage = ToOpenCV(self.image)
+					# openimage = cv.blur(openimage, (9,9))
+					# ROSimage = ToRos(openimage)
+
+					''' 
+					TODO:
+
+					1. Create Kalman Filter instance in constructor.
+					2. Create optical flow instance in constructor.
+					3. Retrieve controller navdata here 
+					4. Retrieve image matrix here. Conver to cv matrix. 
+					5. Run optical flow alg. on image.
+
+					6. Make prediction with controller data
+					7. Update prediction with image data. 
+					'''
+
+
+
 
 					# Convert the ROS image into a QImage which we can display
 					image = QtGui.QPixmap.fromImage(QtGui.QImage(ROSimage.data, ROSimage.width, ROSimage.height, QtGui.QImage.Format_RGB888))
