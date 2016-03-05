@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# The Joystick Controller Node for the tutorial "Up and flying with the AR.Drone and ROS | Joystick Control"
-# https://github.com/mikehamer/ardrone_tutorials
-
 # This controller implements the base DroneVideoDisplay class, the DroneController class and subscribes to joystick messages
 
 # Import the ROS libraries, and load the manifest file which through <depend package=... /> will give us access to the project dependencies

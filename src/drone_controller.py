@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# A basic drone controller class for the tutorial "Up and flying with the AR.Drone and ROS | Getting Started"
-# https://github.com/mikehamer/ardrone_tutorials_getting_started
 
 # This class implements basic control functionality which we will be using in future tutorials.
 # It can command takeoff/landing/emergency as well as drone movement
@@ -28,6 +26,10 @@ class BasicDroneController(object):
 	def __init__(self):
 		# Holds the current drone status
 		self.status = -1
+		self.navdata = None
+
+		self.velocity = 0;
+		self.accel = 0;
 
 		# Subscribe to the /ardrone/navdata topic, of message type navdata, and call self.ReceiveNavdata when a message is received
 		self.subNavdata = rospy.Subscriber('/ardrone/navdata',Navdata,self.ReceiveNavdata) 
@@ -50,6 +52,12 @@ class BasicDroneController(object):
 	def ReceiveNavdata(self,navdata):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
+		self.navdata = navdata
+
+		rospy.loginfo(navdata)
+
+	def GetNavData(self):
+		return self.navdata
 
 	def SendTakeoff(self):
 		# Send a takeoff message to the ardrone driver

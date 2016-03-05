@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# A basic video display window for the tutorial "Up and flying with the AR.Drone and ROS | Getting Started"
-# https://github.com/mikehamer/ardrone_tutorials_getting_started
-
 # This display window listens to the drone's video feeds and updates the display at regular intervals
 # It also tracks the drone's status and any connection problems, displaying them in the window's status bar
 # By default it includes no control functionality. The class can be extended to implement key or mouse listeners if required
@@ -10,7 +7,7 @@
 # Import the ROS libraries, and load the manifest file which through <depend package=... /> will give us access to the project dependencies
 import roslib; roslib.load_manifest('ardrone_tutorials')
 import rospy
-
+import cv2 as cv
 # Import the two types of messages we're interested in
 from sensor_msgs.msg import Image    	 # for receiving the video feed
 from ardrone_autonomy.msg import Navdata # for receiving navdata feedback
@@ -23,6 +20,8 @@ from drone_status import DroneStatus
 
 # The GUI libraries
 from PySide import QtCore, QtGui
+
+from image_converter import ToOpenCV, ToRos
 
 
 # Some Constants
@@ -97,8 +96,13 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 			# We have some issues with locking between the display thread and the ros messaging thread due to the size of the image, so we need to lock the resources
 			self.imageLock.acquire()
 			try:			
+					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
+					openimage = ToOpenCV(self.image)
+					openimage = cv.blur(openimage, (9,9))
+					ROSimage = ToRos(openimage)
+
 					# Convert the ROS image into a QImage which we can display
-					image = QtGui.QPixmap.fromImage(QtGui.QImage(self.image.data, self.image.width, self.image.height, QtGui.QImage.Format_RGB888))
+					image = QtGui.QPixmap.fromImage(QtGui.QImage(ROSimage.data, ROSimage.width, ROSimage.height, QtGui.QImage.Format_RGB888))
 					if len(self.tags) > 0:
 						self.tagLock.acquire()
 						try:
@@ -116,7 +120,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 			finally:
 				self.imageLock.release()
 
-			# We could  do more processing (eg OpenCV) here if we wanted to, but for now lets just display the window.
+			# display the window.
 			self.resize(image.width(),image.height())
 			self.imageBox.setPixmap(image)
 
@@ -151,7 +155,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		finally:
 			self.tagLock.release()
 
-if __name__=='__main__':
+'''if __name__=='__main__':
 	import sys
 	rospy.init_node('ardrone_video_display')
 	app = QtGui.QApplication(sys.argv)
@@ -159,4 +163,4 @@ if __name__=='__main__':
 	display.show()
 	status = app.exec_()
 	rospy.signal_shutdown('Great Flying!')
-	sys.exit(status)
+	sys.exit(status)'''

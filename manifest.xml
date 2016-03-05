@@ -1,15 +1,21 @@
+
 <package>
   <description brief="AR.Drone Tutorials">
   	Controllers developed for the "Up and flying with the AR.Drone and ROS" tutorial series
   </description>
-  <author>Mike Hamer</author>
+  <author>Connor Lee</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://github.com/mikehamer/ardrone_tutorials</url>
+  <url>http://github.com/connorlee77/ardrone_stateestimation</url>
 
   <depend package="ardrone_autonomy" />
   <depend package="joy" />
+  <depend package="cv_bridge" />
+  <depend package="sensor_msgs" />
+  <depend package="rospy" />
+  <depned package="std_msgs" />
+  <depend package="opencv_apps" />
+
   
 </package>
-
 

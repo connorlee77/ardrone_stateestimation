@@ -4,7 +4,7 @@
 	<description>
 		Controllers developed for the "Up and flying with the AR.Drone and ROS" tutorial series
 	</description>
-	<maintainer email="mail@mail.com">Mike Hamer</maintainer>
+	<maintainer email="connorlee77@gmail.com">Connor Lee</maintainer>
 	
 	<buildtool_depend>catkin</buildtool_depend>
 	
@@ -12,7 +12,7 @@
 	<run_depend>joy</run_depend>
 	
 	<license>BSD</license>
-	<url>http://github.com/mikehamer/ardrone_tutorials</url>
+	<url>http://github.com/connorlee77/ardrone_stateestimation</url>
 </package>
 
 

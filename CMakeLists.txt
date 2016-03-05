@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(ardrone_tutorials)
 
 find_package(catkin REQUIRED)
-catkin_package()
+catkin_package(
+	LIBRARIES ${PROJECT_NAME}
+)
+
 
 #catkin_python_setup()
 
