@@ -53,11 +53,19 @@ class BasicDroneController(object):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
 		self.navdata = navdata
+		self.velocity = navdata.vx
+		self.accel = navdata.ax
 
 		rospy.loginfo(navdata)
 
 	def GetNavData(self):
 		return self.navdata
+
+	def GetVelocity(self):
+		return self.velocity
+
+	def GetAcceleration(self):
+		return self.accel
 
 	def SendTakeoff(self):
 		# Send a takeoff message to the ardrone driver

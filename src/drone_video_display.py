@@ -8,6 +8,10 @@
 import roslib; roslib.load_manifest('ardrone_tutorials')
 import rospy
 import cv2 as cv
+import numpy as np
+import KalmanFilter as kf 
+
+
 # Import the two types of messages we're interested in
 from sensor_msgs.msg import Image    	 # for receiving the video feed
 from ardrone_autonomy.msg import Navdata # for receiving navdata feedback
@@ -63,6 +67,27 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		
 		# Subscribe to the drone's video feed, calling self.ReceiveImage when a new frame is received
 		self.subVideo   = rospy.Subscriber('/ardrone/image_raw',Image,self.ReceiveImage)
+
+		'''Begin Kalman Filter init'''
+		#Define Kalman Filter constants
+		time = GUI_UPDATE_PERIOD
+		time2 = time*time
+		dimension = 4
+		A = np.matrix([[1,0,time,0],[0,1,0,time],[0,0,1,0],[0,0,0,1]])
+		B = np.matrix([[time2,0],[0,time2],[time,0],[0, time]])
+		H = np.matrix([[0,0,1,0],[0,0,0,1]])
+		P = np.identity(dimension)
+		Q = np.identity(dimension)
+		R = np.identity(dimension)
+
+		#tweak covariance matrices
+		Q = np.dot(1,Q)
+		R = np.dot(0.1, R)
+
+		#create the Kalman Filter instance
+		kf = kf.KalmanFilter(A, P, R, Q, H, dimension)
+
+		'''End Kalman Filter init'''
 		
 		# Holds the image frame received from the drone and later processed by the GUI
 		self.image = None
@@ -117,8 +142,13 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					7. Update prediction with image data. 
 					'''
 
+					#update the measured accelerations and velocities
+					u_k = self.controller.GetAcceleration()
+					z_k = #get velocity from OpenCV
 
-
+					kf.predictState(u_k, B)
+					kf.getKalmanGain()
+					kf.update(z_k)
 
 					# Convert the ROS image into a QImage which we can display
 					image = QtGui.QPixmap.fromImage(QtGui.QImage(ROSimage.data, ROSimage.width, ROSimage.height, QtGui.QImage.Format_RGB888))
