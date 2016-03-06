@@ -72,10 +72,12 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		#Define Kalman Filter constants
 		time = GUI_UPDATE_PERIOD
 		time2 = time*time
-		dimension = 4
-		A = np.matrix([[1,0,time,0],[0,1,0,time],[0,0,1,0],[0,0,0,1]])
-		B = np.matrix([[time2,0],[0,time2],[time,0],[0, time]])
-		H = np.matrix([[0,0,1,0],[0,0,0,1]])
+
+		#1D case for velocity in the x-direction
+		dimension = 1
+		A = np.identity(dimension)
+		B = np.matrix(time)
+		H = np.identity(dimension)
 		P = np.identity(dimension)
 		Q = np.identity(dimension)
 		R = np.identity(dimension)
@@ -85,7 +87,10 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		R = np.dot(0.1, R)
 
 		#create the Kalman Filter instance
-		kf = kf.KalmanFilter(A, P, R, Q, H, dimension)
+		kf = kf.KalmanFilter(A, P, R, Q, H, B, dimension)
+
+		#create empty array to house our estimates
+		state_estimate = []
 
 		'''End Kalman Filter init'''
 		
@@ -124,31 +129,40 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 			# We have some issues with locking between the display thread and the ros messaging thread due to the size of the image, so we need to lock the resources
 			self.imageLock.acquire()
 			try:			
-					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
-					# openimage = ToOpenCV(self.image)
-					# openimage = cv.blur(openimage, (9,9))
-					# ROSimage = ToRos(openimage)
 
 					''' 
 					TODO:
 
-					1. Create Kalman Filter instance in constructor.
+					1. Create Kalman Filter instance in constructor.         DONE 
 					2. Create optical flow instance in constructor.
-					3. Retrieve controller navdata here 
-					4. Retrieve image matrix here. Conver to cv matrix. 
+					3. Retrieve controller navdata here.                     DONE 
+					4. Retrieve image matrix here. Conver to cv matrix.      DONE
 					5. Run optical flow alg. on image.
 
-					6. Make prediction with controller data
-					7. Update prediction with image data. 
+					6. Make prediction with controller data.                 DONE
+					7. Update prediction with image data.                    DONE
+					8. Plot estimate vs real continuously
 					'''
+					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
+					openimage = ToOpenCV(self.image)
+					#estimated_velocity = opencvfnction(openimage) 
+					ROSimage = ToRos(openimage)
 
 					#update the measured accelerations and velocities
+					real_velocity = self.controller.GetVelocity()
 					u_k = self.controller.GetAcceleration()
-					z_k = #get velocity from OpenCV
+					z_k = estimated_velocity
 
-					kf.predictState(u_k, B)
+					kf.predictState(u_k)
 					kf.getKalmanGain()
 					kf.update(z_k)
+
+					state_estimate.append(kf.x_k)
+
+					#plot everything here
+
+
+
 
 					# Convert the ROS image into a QImage which we can display
 					image = QtGui.QPixmap.fromImage(QtGui.QImage(ROSimage.data, ROSimage.width, ROSimage.height, QtGui.QImage.Format_RGB888))
