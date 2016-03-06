@@ -10,7 +10,8 @@ import rospy
 import cv2 as cv
 import numpy as np
 import KalmanFilter as kf 
-
+import matplotlib.pyplot as plt
+from image_converter import ToOpenCV, ToRos
 
 # Import the two types of messages we're interested in
 from sensor_msgs.msg import Image    	 # for receiving the video feed
@@ -25,9 +26,6 @@ from drone_status import DroneStatus
 
 # The GUI libraries
 from PySide import QtCore, QtGui
-
-from image_converter import ToOpenCV, ToRos
-
 
 # Some Constants
 CONNECTION_CHECK_PERIOD = 250 #ms
@@ -68,7 +66,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		# Subscribe to the drone's video feed, calling self.ReceiveImage when a new frame is received
 		self.subVideo   = rospy.Subscriber('/ardrone/image_raw',Image,self.ReceiveImage)
 
-		'''Begin Kalman Filter init'''
+		'''BEGIN CHANGES'''
 		#Define Kalman Filter constants
 		time = GUI_UPDATE_PERIOD
 		time2 = time*time
@@ -91,8 +89,9 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 
 		#create empty array to house our estimates
 		state_estimate = []
+		state_real = []
 
-		'''End Kalman Filter init'''
+		'''END CHANGES'''
 		
 		# Holds the image frame received from the drone and later processed by the GUI
 		self.image = None
@@ -141,8 +140,10 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 
 					6. Make prediction with controller data.                 DONE
 					7. Update prediction with image data.                    DONE
-					8. Plot estimate vs real continuously
+					8. Plot estimate vs real continuously					 DONE
 					'''
+
+					'''BEGIN CHANGES'''
 					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
 					openimage = ToOpenCV(self.image)
 					#estimated_velocity = opencvfnction(openimage) 
@@ -153,16 +154,21 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					u_k = self.controller.GetAcceleration()
 					z_k = estimated_velocity
 
+					#Kalman Filter step
 					kf.predictState(u_k)
 					kf.getKalmanGain()
 					kf.update(z_k)
 
 					state_estimate.append(kf.x_k)
+					state_real.append(real_velocity)
 
 					#plot everything here
+					plt.plot(state_estimate, label = "estimated velocity")
+					plt.plot(state_real, label = "IMU velocity")
+					plt.legend()
+					plt.show()
 
-
-
+					'''END CHANGES'''
 
 					# Convert the ROS image into a QImage which we can display
 					image = QtGui.QPixmap.fromImage(QtGui.QImage(ROSimage.data, ROSimage.width, ROSimage.height, QtGui.QImage.Format_RGB888))
@@ -217,13 +223,3 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 				self.tags = []
 		finally:
 			self.tagLock.release()
-
-'''if __name__=='__main__':
-	import sys
-	rospy.init_node('ardrone_video_display')
-	app = QtGui.QApplication(sys.argv)
-	display = DroneVideoDisplay()
-	display.show()
-	status = app.exec_()
-	rospy.signal_shutdown('Great Flying!')
-	sys.exit(status)'''
