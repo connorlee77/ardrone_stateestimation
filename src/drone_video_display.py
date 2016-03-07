@@ -150,8 +150,9 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					ROSimage = ToRos(openimage)
 
 					#update the measured accelerations and velocities
-					real_velocity = self.controller.GetVelocity()
-					u_k = self.controller.GetAcceleration()
+					if self.communicationSinceTimer == True:
+						real_velocity = self.controller.GetVelocity()
+						u_k = self.controller.GetAcceleration()
 					z_k = estimated_velocity
 
 					#Kalman Filter step
