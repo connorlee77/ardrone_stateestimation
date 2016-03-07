@@ -91,6 +91,21 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		state_estimate = []
 		state_real = []
 
+
+
+		#### Computer vision code
+
+		self.x_pix = 320
+		self.y_pix = 240
+
+		self.x_ang = np.radians(54.4)
+		self.y_ang = np.radians(37.8)
+
+		self.prev_frame = None
+		self.prev_points = None
+		self.prev_time = None
+		self.velocity = []
+
 		'''END CHANGES'''
 		
 		# Holds the image frame received from the drone and later processed by the GUI
@@ -133,10 +148,10 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					TODO:
 
 					1. Create Kalman Filter instance in constructor.         DONE 
-					2. Create optical flow instance in constructor.
+					2. Create optical flow instance in constructor. 	     DONE
 					3. Retrieve controller navdata here.                     DONE 
 					4. Retrieve image matrix here. Conver to cv matrix.      DONE
-					5. Run optical flow alg. on image.
+					5. Run optical flow alg. on image. 						 DONE
 
 					6. Make prediction with controller data.                 DONE
 					7. Update prediction with image data.                    DONE
@@ -146,8 +161,71 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					'''BEGIN CHANGES'''
 					#convert the ROS image to OpenCV and apply some processing. then convert back to ROS
 					openimage = ToOpenCV(self.image)
-					#estimated_velocity = opencvfnction(openimage) 
+
+					# make picture 2D
+					frame = cv2.cvtColor(openimage, cv2.COLOR_BGR2GRAY)
+
+					''' TODO: Implement GetHeight in drone_controller.py '''
+
+					feature_params = dict( maxCorners = 100,
+	                       qualityLevel = 0.3,
+	                       minDistance = 7,
+	                       blockSize = 7 )
+
+					if self.prev_frame is None:
+						self.prev_frame = frame 
+						self.prev_points = cv.goodFeaturesToTrack(self.prev_frame, mask=None, **feature_params)
+						self.prev_time = self.GetTime()
+					else:
+
+						h = self.controller.GetHeight()
+						xdist = (h * np.tan(self.x_ang / 2.0))
+						ydist = (h * np.tan(self.y_ang / 2.0)) 
+
+						pix2mx = self.x_pix / xdist
+						pix2my = self.y_pix / ydist
+
+						curr_frame = frame
+
+						''' Implement GetTime() '''
+						curr_time = self.GetTime()
+						new_points, status, error = cv2.calcOpticalFlowPyrLK(self.prev_frame, self.curr_frame, self.prev_points)
+
+						good_new = new_points[status==1]
+						good_old = prev_points[status==1]
+						assert good_new.shape == good_old.shape
+
+
+						### Calculate velocity components
+						sum_x = 0.0
+						sum_y = 0.0
+						ptslen = len(good_new)
+						for x in range(ptslen):
+							xcomp = ((good_new[x][1] - good_old[x][1]) / self.x_pix) / ((curr_time - self.prev_time) / 1000.0) 
+							ycomp = ((good_new[x][0] - good_old[x][0]) / self.y_pix) / ((curr_time - self.prev_time) / 1000.0)
+							sum_y += ycomp
+							sum_x += xcomp
+
+						avg_x = np.divide(xcomp, ptslen)
+						avg_y = np.divide(ycomp, ptslen)
+
+						self.velocity.append(np.array([avg_x, avg_y]))
+
+						# iterate next frames
+						self.prev_frame = curr_frame
+						self.prev_points = new_points
+						self.prev_time = curr_time
+
+
+					#Convert to ROS
 					ROSimage = ToRos(openimage)
+
+					##############################################
+					### Change velocity to get correct one here ## 
+					##############################################
+					estimated_velocity = self.velocity[-1:] ######
+					##############################################
+
 
 					#update the measured accelerations and velocities
 					real_velocity = self.controller.GetVelocity()
