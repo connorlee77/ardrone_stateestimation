@@ -152,10 +152,11 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					3. Retrieve controller navdata here.                     DONE 
 					4. Retrieve image matrix here. Conver to cv matrix.      DONE
 					5. Run optical flow alg. on image. 						 DONE
-
 					6. Make prediction with controller data.                 DONE
 					7. Update prediction with image data.                    DONE
 					8. Plot estimate vs real continuously					 DONE
+					9. GetHeight() function in drone_controller.py 			 INCOMPLETE
+					10. GetTime() function in here						     INCOMPLETE
 					'''
 
 					'''BEGIN CHANGES'''
