@@ -68,12 +68,9 @@ class BasicDroneController(object):
 	def GetAcceleration(self):
 		return self.accel
 
-<<<<<<< HEAD
 	def GetHeight(self):
 		return self.height
 
-=======
->>>>>>> 207b13e72a9e66fd82aa7bb404141e3e105d87d7
 	def SendTakeoff(self):
 		# Send a takeoff message to the ardrone driver
 		# Note we only send a takeoff message if the drone is landed - an unexpected takeoff is not good!
