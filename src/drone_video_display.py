@@ -106,6 +106,8 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		self.prev_time = None
 		self.vel = []
 
+		plt.ion()
+
 		'''END CHANGES'''
 		
 		# Holds the image frame received from the drone and later processed by the GUI
@@ -246,10 +248,9 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					self.state_real.append(real_velocity)
 
 					#plot everything here
-					'''plt.plot(state_estimate, label = "estimated velocity")
-					plt.plot(state_real, label = "IMU velocity")
-					plt.legend()
-					plt.show()'''
+					#plt.plot(self.state_estimate, label = "estimated velocity")
+					plt.plot(self.state_real)
+					plt.draw()
 
 					'''END CHANGES'''
 
