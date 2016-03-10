@@ -30,6 +30,7 @@ class BasicDroneController(object):
 
 		self.velocity = 0;
 		self.accel = 0;
+		self.height = 1;
 
 		# Subscribe to the /ardrone/navdata topic, of message type navdata, and call self.ReceiveNavdata when a message is received
 		self.subNavdata = rospy.Subscriber('/ardrone/navdata',Navdata,self.ReceiveNavdata) 
@@ -53,11 +54,22 @@ class BasicDroneController(object):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
 		self.navdata = navdata
+		self.velocity = navdata.vx
+		self.accel = navdata.ax
 
 		rospy.loginfo(navdata)
 
 	def GetNavData(self):
 		return self.navdata
+
+	def GetVelocity(self):
+		return self.velocity
+
+	def GetAcceleration(self):
+		return self.accel
+
+	def GetHeight(self):
+		return self.height
 
 	def SendTakeoff(self):
 		# Send a takeoff message to the ardrone driver
