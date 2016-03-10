@@ -93,7 +93,6 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		self.state_real = []
 
 
-
 		#### Computer vision code
 
 		self.x_pix = 320
