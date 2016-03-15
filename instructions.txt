@@ -1,0 +1,7 @@
+Instructions
+
+cd catkin_ws/src/ardrone_tutorials/launch
+source /home/connor/catkin_ws/devel/setup.bash
+roslaunch ardrone_tutorials keyboard_controller.launch
+
+In new terminal: rosservice call /ardrone/togglecam (switches to bottom camera)
