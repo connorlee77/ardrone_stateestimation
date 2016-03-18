@@ -60,7 +60,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		self.setCentralWidget(self.imageBox)
 
 		self.controller = BasicDroneController()
-
+		self.counter = 0
 		# Subscribe to the /ardrone/navdata topic, of message type navdata, and call self.ReceiveNavdata when a message is received
 		self.subNavdata = rospy.Subscriber('/ardrone/navdata',Navdata,self.ReceiveNavdata) 
 		
@@ -87,6 +87,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 
 		#create the Kalman Filter instance
 		self.kfilter = KalmanFilter(A, P, R, Q, H, B, dimension)
+		#rospy.loginfo("INIT")
 
 		#create empty array to house our estimates
 		self.state_estimate = []
@@ -230,26 +231,43 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 					##############################################
 					estimated_velocity = self.vel[-1:] ######
 					##############################################
+					if estimated_velocity == []:
+						estimated_velocity = 0
+					#rospy.loginfo("estimated_velocity")
+					#rospy.loginfo(estimated_velocity)
 
 					u_k = 0
 					real_velocity = 0
 					#update the measured accelerations and velocities
-					if self.communicationSinceTimer == True:
-						real_velocity = self.controller.GetVelocity()
-						u_k = self.controller.GetAcceleration()
+					real_velocity = self.controller.GetVelocity()
+					rospy.loginfo("real_velocity")
+					rospy.loginfo(real_velocity)
+					u_k = self.controller.GetAcceleration()
 					z_k = estimated_velocity
+					rospy.loginfo("z_k")
+					rospy.loginfo(estimated_velocity)
 
 					#Kalman Filter step
 					self.kfilter.predictState(u_k)
 					self.kfilter.getKalmanGain()
-					self.kfilter.update(z_k)
+					#rospy.loginfo("kalman_gain")
+					#rospy.loginfo(self.kfilter.kalmanGain)
+					self.kfilter.update(estimated_velocity)
 
-					self.state_estimate.append(self.kfilter.x_k)
+					self.state_estimate.append(self.kfilter.x_k.item(0))
 					self.state_real.append(real_velocity)
-
-					#plot everything here
-					#plt.plot(self.state_estimate, label = "estimated velocity")
-					plt.plot(self.state_real)
+					#plot everything here, estimates not plotting atm
+					if self.counter > 100:
+						plt.plot(self.state_estimate[-90:], label = "estimated velocity", color = 'black')
+						plt.plot(self.state_real[-90], color = 'yellow')
+					else: 
+						plt.plot(self.state_estimate, label = "estimated velocity", color = 'black')
+						plt.plot(self.state_real, color = 'yellow')
+					self.counter += 1
+					#rospy.loginfo("estimate")
+					#rospy.loginfo(self.state_estimate)
+					#rospy.loginfo("real state")
+					#rospy.loginfo(self.state_real)
 					plt.draw()
 
 					'''END CHANGES'''

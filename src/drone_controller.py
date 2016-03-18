@@ -54,7 +54,7 @@ class BasicDroneController(object):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
 		self.navdata = navdata
-		self.velocity = navdata.vx
+		self.velocity = navdata.vx / 1000 #convert to SI m/s
 		self.accel = navdata.ax
 
 		rospy.loginfo(navdata)

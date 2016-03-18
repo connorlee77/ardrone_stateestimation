@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import rospy
 
 class KalmanFilter:
 
@@ -15,10 +16,15 @@ class KalmanFilter:
 		self.dimensions = dimension
 
 	def predictState(self, u_k):
+		#rospy.loginfo("predict_state1")
+		#rospy.loginfo(self.x_k)
 
 		self.x_k = np.add(
 			np.dot(self.A, self.x_k),
 			np.dot(self.B, u_k))
+
+		#rospy.loginfo("predict_state2")
+		#rospy.loginfo(self.x_k)
 
 		self.P = np.add(np.dot(
 			np.dot(self.A, self.P),
@@ -42,11 +48,14 @@ class KalmanFilter:
 						self.H,
 						self.x_k))
 
-		self.x_k = np.add(
-			self.x_k, 
-			np.dot(
-				self.kalmanGain,
-				residual))
+		#chad = z_k
+		#rospy.loginfo("update1")
+		#rospy.loginfo(chad)
+
+		self.x_k = np.add(self.x_k, np.dot(self.kalmanGain, residual))
+
+		#rospy.loginfo("update2")
+		#rospy.loginfo(self.x_k)
 		
 		self.P = np.dot(
 			np.subtract(
